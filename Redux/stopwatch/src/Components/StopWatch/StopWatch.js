@@ -2,27 +2,22 @@ import React, { useState } from "react";
 import "./StopWatch.css";
 import Timer from "../Timer/Timer";
 import ControlButtons from "../ControlButtons/ControlButtons";
+import {useSelector,useDispatch} from 'react-redux';
+import {updateTime, resetTime, addLap, dropLap} from '../../redux/actions/actions'
   
 function StopWatch() {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(true);
-  const [time, setTime] = useState(0);
-  const[lap,setLap]   = useState([]);
+  const time =  useSelector(state => state.time.time);
+  const lap = useSelector(state =>state.laps.laps)
+  const dispatch = useDispatch();
   
+
   React.useEffect(() => {
-    let interval = null;
-  
     if (isActive && isPaused === false) {
-      interval = setInterval(() => {
-        setTime((time) => time + 10);
-      }, 10);
-    } else {
-      clearInterval(interval);
-    }
-    return () => {
-      clearInterval(interval);
-    };
-  }, [isActive, isPaused]);
+      dispatch(updateTime());
+    } 
+  }, [isActive, isPaused,time]);
   
   const handleStart = () => {
     setIsActive(true);
@@ -34,19 +29,23 @@ function StopWatch() {
     arr.reverse();
 
     if(arr.length>2)
-    arr = arr.slice(arr.length -4,arr.length)
+    arr = arr.slice(arr.length -3,arr.length)
 
     if( isPaused && (arr.length === 0 || time!==arr[arr.length-1])){
       arr.push(time);
       arr.reverse();
-      setLap(arr)
+      dispatch(addLap(arr))
     }
     setIsPaused(!isPaused);
   };
   
   const handleReset = () => {
     setIsActive(false);
-    setTime(0);
+    dispatch(resetTime());
+    handleDrop();
+  };
+  const handleDrop = ()=>{
+    dispatch(dropLap());
   };
   
   return (
@@ -80,5 +79,6 @@ function StopWatch() {
     </div>
   );
 }
-  
+
+
 export default StopWatch;
